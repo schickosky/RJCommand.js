@@ -19,6 +19,7 @@ export const createToon = /* GraphQL */ `
         rising
         mirror
       }
+      originalJoinDate
       joinDate
       lastActive
       publicNote
@@ -26,7 +27,6 @@ export const createToon = /* GraphQL */ `
       officerNoteAuthor
       fleet
       inFleet
-      timeInFleet
       version
       createdAt
       updatedAt
@@ -51,6 +51,7 @@ export const updateToon = /* GraphQL */ `
         rising
         mirror
       }
+      originalJoinDate
       joinDate
       lastActive
       publicNote
@@ -58,7 +59,6 @@ export const updateToon = /* GraphQL */ `
       officerNoteAuthor
       fleet
       inFleet
-      timeInFleet
       version
       createdAt
       updatedAt
@@ -83,6 +83,7 @@ export const deleteToon = /* GraphQL */ `
         rising
         mirror
       }
+      originalJoinDate
       joinDate
       lastActive
       publicNote
@@ -90,7 +91,6 @@ export const deleteToon = /* GraphQL */ `
       officerNoteAuthor
       fleet
       inFleet
-      timeInFleet
       version
       createdAt
       updatedAt
