@@ -1,0 +1,29 @@
+type Toon @model 
+  @key(fields: ["account", "character"]) 
+  @auth(rules: [{ allow: private }]) 
+  @key(name: "toonsByFleet", fields: ["fleet"], queryField: "toonsByFleet")
+  @versioned {
+  account: String!
+  character: String!
+  level: Int
+  currentRank: Int!
+  maximumRank: Int
+  contribs: Contribs!
+  originalJoinDate: AWSDateTime
+  joinDate: AWSDateTime!
+  lastActive: AWSDateTime!
+  publicNote: String
+  officerNote: String
+  officerNoteAuthor: String
+  fleet: String!
+  inFleet: Boolean!
+  version: Int!
+}
+
+type Contribs {
+  ra: Int
+  rse: Int
+  snoo: Int
+  rising: Int
+  mirror: Int
+}
