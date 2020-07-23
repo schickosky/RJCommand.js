@@ -1,9 +1,9 @@
 import React from 'react';
 import '../App.css';
-import { withAuthenticator, AmplifySignOut } from '@aws-amplify/ui-react';
+import { AmplifySignOut } from '@aws-amplify/ui-react';
 import Views from './Views';
 import Upload from './Upload';
-
+import { ConfirmSignIn, ForgotPassword, RequireNewPassword, SignIn, VerifyContact, withAuthenticator } from 'aws-amplify-react';
 function App() {
   return (
     <div className="App container-fluid">
@@ -18,4 +18,4 @@ function App() {
   );
 }
 
-export default withAuthenticator(App);
+export default withAuthenticator(App, false, [<SignIn />, <ConfirmSignIn />, <ForgotPassword />, <RequireNewPassword />, <VerifyContact />]);
