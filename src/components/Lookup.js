@@ -8,7 +8,8 @@ class Lookup extends Component {
         this.state = {
             charValue: '',
             accountValue: '',
-            toons: []
+            toons: [],
+            loading: false
         };
 
         this.onKeyDown = this.onKeyDown.bind(this);
@@ -25,7 +26,7 @@ class Lookup extends Component {
                     </div>
                     <input type="text" className="form-control" placeholder="Account" value={this.state.accountValue} onKeyDown={this.onKeyDown} onChange={this.accountChange} />
                 </div>
-                { this.state.toons && <Roster toons={this.state.toons} title="Results" />}
+                { this.state.toons && <Roster toons={this.state.toons} title="Results" loading={this.state.loading} />}
             </div>
         );
     }
@@ -40,6 +41,7 @@ class Lookup extends Component {
 
     async onKeyDown(e) {
         if (e.key === 'Enter') {
+            this.setState({ loading: true });
             const filter = {};
             if (this.state.charValue) {
                 filter.character = {contains: this.state.charValue};
@@ -56,7 +58,7 @@ class Lookup extends Component {
                 console.log(query.errors)
             }
 
-            this.setState({toons: query.toons});
+            this.setState({toons: query.toons, loading: false});
         }
     }
 }

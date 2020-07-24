@@ -27,7 +27,42 @@ const rankDays = [14, 90];
 const rankContribs = [20000, 45000];
 const rankKicksDays = [10, 14, 21, 28];
 
+const createToonLegacy = (data, fleet) => {
+    let contribs = {};
+    let charFleet = "";
+    if ("fleet" in data) {
+        charFleet = data.fleet;
+    }
+    else {
+        charFleet = fleet;
+    }
+    contribs[charFleet] = data.contribs;
+
+    let lastActive = "kdate" in data ? data["kdate"] : data["lastonline"];
+    lastActive = moment(lastActive, "YYYY-MM-DD hh:mm:ss");
+    return {
+        character: data["cname"],
+        account: data["account"],
+        contribs: contribs,
+        fleet: charFleet,
+        currentRank: rankTransform.get(data["rank"]),
+        maximumRank: rankTransform.get(data["rank"]),
+        joinDate: moment(data["jdate"], "YYYY-MM-DD hh:mm:ss"),
+        originalJoinDate: moment(data["jdate"], "YYYY-MM-DD hh:mm:ss"),
+        lastActive: lastActive.isValid() ? lastActive : moment(data["jdate"], "YYYY-MM-DD hh:mm:ss"),
+        level: "level" in data ? data["level"] : 0,
+        publicNote: data["mcomment"],
+        officerNote: data["ocomment"],
+        officerNoteAuthor: data["ocommentauth"],
+        inFleet: true
+    };
+}
+
 export const createToon = (data, fleet) => {
+    if ("cname" in data) {
+        return createToonLegacy(data, fleet);
+    }
+
     let contribs = { };
     contribs[fleet] = data["Contribution Total"];
 
@@ -39,13 +74,23 @@ export const createToon = (data, fleet) => {
         currentRank: rankTransform.get(data["Guild Rank"]),
         maximumRank: rankTransform.get(data["Guild Rank"]),
         joinDate: moment(data["Join Date"], "MM/DD/YYYY hh:mm:ssa"),
+        originalJoinDate: moment(data["Join Date"], "MM/DD/YYYY hh:mm:ssa"),
         lastActive: moment(data["Last Active Date"], "MM/DD/YYYY hh:mm:ssa"),
         level: data["Level"],
+        publicNote: data["Public Comment"],
+        officerNote: data["Officer Comment"],
+        officerNoteAuth: data["Officer Comment Author"],
         inFleet: true
     };
 };
 
 export const mergeToons = (l, r) => {
+    if (l.account === "@LetheOblivion") {
+        console.log("L:")
+        console.log(l);
+        console.log("R:");
+        console.log(r);
+    }
     let contribs = l.contribs;
     contribs[r.fleet] = r.contribs[r.fleet]
 
@@ -54,11 +99,15 @@ export const mergeToons = (l, r) => {
         account: l.account,
         contribs: contribs,
         fleet: r.fleet,
-        currentRank: r.rank,
-        maximumRank: Math.max(l.rank, r.rank),
-        joinDate: r.joindate,
-        lastActive: r.lastactive,
+        currentRank: r.currentRank,
+        maximumRank: Math.max(l.maximumRank, r.maximumRank),
+        joinDate: r.joinDate,
+        originalJoinDate: l.joinDate,
+        lastActive: r.lastActive,
         level: r.level,
+        officerNote: r.officerNote,
+        officerNoteAuthor: r.officerNoteAuthor,
+        publicNote: r.publicNote,
         inFleet: true
     };
 
@@ -69,14 +118,22 @@ export const mergeToons = (l, r) => {
     return newToon;
 };
 
+export const scrubToon = toon => {
+    delete toon.createdAt;
+    delete toon.updatedAt;
+    toon.expectedVersion = toon.version;
+    delete toon.version;
+
+    return toon;
+}
+
 export const getTotalContribsByAccount = async account => {
-    const response = await getAllToons({ filter: { account: { eq: account } } });
+    const response = await getAllToons({ account: account });
     if (response.errors.length) {
         console.log("Encountered errors getting all toons for an account");
         console.log(response.errors);
     }
-    console.log("account returned for " + account);
-    console.log(response);
+
     const accountContribs = response.toons.map(toon => toon.contribs).reduce((l, r) => fleets.reduce((acc, cur) => ({...acc, [cur]: (l[cur] || 0) + (r[cur] || 0) }), {}), {});
     return fleets.reduce((acc, cur) => acc + accountContribs[cur], 0);
 }
@@ -135,10 +192,15 @@ export const getAllToons = async (variables) => {
     return {toons: toons, errors: errors};
 }
 
-export const getAllToonsForFleet = async (fleet) => {
+export const getAllToonsForFleet = async (fleet,  inFleet = false) => {
     let toons = [];
     let errors = [];
-    const variables = { fleet: fleet }
+    const variables = { fleet: {eq: fleet} }
+
+    if (inFleet) {
+        variables.inFleet = true;
+    }
+
     let response = await API.graphql(graphqlOperation(queries.toonsByFleet, variables));
     while (response.data.toonsByFleet.nextToken) {
         if (response.data.toonsByFleet.items)

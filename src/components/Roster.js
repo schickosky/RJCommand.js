@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import RosterRow from './RosterRow';
+import Spinner from 'react-bootstrap/Spinner';
 
 class Roster extends Component {
     render() {
@@ -7,7 +8,8 @@ class Roster extends Component {
         return (
             <div className="roster">
                 <h1>{this.props.title}</h1>
-                
+                {this.props.loading 
+                ? <Spinner animation="grow" /> :
                 <table className="table">
                     <thead>
                         <tr>
@@ -29,6 +31,7 @@ class Roster extends Component {
                         }
                     </tbody>
                 </table>
+                }
             </div>
         );
     }

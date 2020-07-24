@@ -1,7 +1,7 @@
 type Toon @model 
   @key(fields: ["account", "character"]) 
   @auth(rules: [{ allow: private }]) 
-  @key(name: "toonsByFleet", fields: ["fleet"], queryField: "toonsByFleet")
+  @key(name: "toonsByFleet", fields: ["fleet", "inFleet"], queryField: "toonsByFleet")
   @versioned {
   account: String!
   character: String!

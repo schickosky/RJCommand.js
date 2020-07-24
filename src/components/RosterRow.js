@@ -26,7 +26,7 @@ class RosterRow extends Component {
                     {fleetNames.get(this.props.meta.fleet)}
                 </td>
                 <td>
-                    {this.props.meta.contribs[this.props.meta.fleet].toLocaleString()}
+                    {this.props.meta.contribs[this.props.meta.fleet] ? this.props.meta.contribs[this.props.meta.fleet].toLocaleString() : 0}
                 </td>
                 <td>
                     {this.state.accountContribs.toLocaleString()}
