@@ -1,7 +1,0 @@
-{
-    "tableName": "toons",
-    "partitionKeyName": "account",
-    "partitionKeyType": "S",
-    "sortKeyName": "character",
-    "sortKeyType": "S"
-}
