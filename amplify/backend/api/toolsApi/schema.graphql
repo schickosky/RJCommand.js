@@ -16,7 +16,7 @@ type Toon @model
   officerNote: String
   officerNoteAuthor: String
   fleet: String!
-  inFleet: Boolean!
+  inFleet: Int!
   version: Int!
 }
 
