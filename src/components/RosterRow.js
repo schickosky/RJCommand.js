@@ -38,6 +38,9 @@ class RosterRow extends Component {
                     {moment(this.props.meta.lastActive).format('llll')}
                 </td>
                 <td>
+                    {this.props.meta.inFleet ? "Yes" : "No"}
+                </td>
+                <td>
                    {this.props.meta.level} 
                 </td>
                 <td>

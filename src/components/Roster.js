@@ -20,6 +20,7 @@ class Roster extends Component {
                             <th>Lifetime Account Contributions</th>
                             <th>Join Date</th>
                             <th>Last Active</th>
+                            <th>In Fleet</th>
                             <th>Level</th>
                             <th>Rank</th>
                             { promoRoster && <th>Promote To</th> }
