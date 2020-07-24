@@ -27,6 +27,8 @@ class Views extends Component {
             const toonsNeedPromotion = Array.from(accountToons.values()).map(needsPromotion).flat().filter(toon => toon.inFleet);
 
             const raResponse = await getAllToonsForFleet("ra", true);
+            console.log("got ra response");
+            console.log(raResponse);
             const raToonsByAccount = groupBy(raResponse.toons.filter(toon => toon.inFleet), toon => toon.account);
             
             const raToons = [...raToonsByAccount].map(([account, accountToons]) => accountToons).filter(accountToons => accountToons.length > 1).flat();

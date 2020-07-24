@@ -77,7 +77,7 @@ class Upload extends Component {
         
         const toonsMissing = this.state.toons.filter(stateToon => toons.some(storedToon => storedToon.account === stateToon.account && storedToon.character === stateToon.character) === false);
         
-        toonsMissing.forEach(toon => toon.inFleet = false);
+        toonsMissing.forEach(toon => toon.inFleet = 0);
 
         console.log("updating missing toons");
 
@@ -107,19 +107,10 @@ class Upload extends Component {
     async mergeWithStored(toon) {
         try {
             const stored = await API.graphql(graphqlOperation(queries.getToon, { character: toon.character, account: toon.account }));
-            if (toon.account === "@LetheOblivion") {
-                console.log("got stored");
-                console.log(stored);
-            }
 
             if (stored.data.getToon)
             {
-                const merged = mergeToons(stored.data.getToon, toon);
-                if (toon.account === "@LetheOblivion") {
-                    console.log("merged");
-                    console.log(merged);
-                }
-                return merged;
+                return mergeToons(stored.data.getToon, toon);
             }
         }
         catch (error) {

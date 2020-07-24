@@ -50,15 +50,17 @@ class Lookup extends Component {
                 filter.account = {contains: this.state.accountValue};
             }
 
-            const query = await getAllToons({filter: filter});
+            if (Object.keys(filter).length) {
+                const query = await getAllToons({filter: filter});
 
-            if (query.errors)
-            {
-                console.log("Encountered errors getting filtered toons");
-                console.log(query.errors)
+                if (query.errors.length)
+                {
+                    console.log("Encountered errors getting filtered toons");
+                    console.log(query.errors)
+                }
+                this.setState({toons: query.toons});
             }
-
-            this.setState({toons: query.toons, loading: false});
+            this.setState({loading: false});
         }
     }
 }

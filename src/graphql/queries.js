@@ -120,3 +120,49 @@ export const toonsByFleet = /* GraphQL */ `
     }
   }
 `;
+export const toonsInFleet = /* GraphQL */ `
+  query ToonsInFleet(
+    $fleet: String
+    $inFleet: ModelIntKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelToonFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    toonsInFleet(
+      fleet: $fleet
+      inFleet: $inFleet
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        account
+        character
+        level
+        currentRank
+        maximumRank
+        contribs {
+          ra
+          rse
+          snoo
+          rising
+          mirror
+        }
+        originalJoinDate
+        joinDate
+        lastActive
+        publicNote
+        officerNote
+        officerNoteAuthor
+        fleet
+        inFleet
+        version
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;

@@ -54,7 +54,7 @@ const createToonLegacy = (data, fleet) => {
         publicNote: data["mcomment"],
         officerNote: data["ocomment"],
         officerNoteAuthor: data["ocommentauth"],
-        inFleet: true
+        inFleet: 1
     };
 }
 
@@ -79,8 +79,8 @@ export const createToon = (data, fleet) => {
         level: data["Level"],
         publicNote: data["Public Comment"],
         officerNote: data["Officer Comment"],
-        officerNoteAuth: data["Officer Comment Author"],
-        inFleet: true
+        officerNoteAuthor: data["Officer Comment Author"],
+        inFleet: 1
     };
 };
 
@@ -108,7 +108,7 @@ export const mergeToons = (l, r) => {
         officerNote: r.officerNote,
         officerNoteAuthor: r.officerNoteAuthor,
         publicNote: r.publicNote,
-        inFleet: true
+        inFleet: 1
     };
 
     if ("version" in l) {
@@ -128,8 +128,9 @@ export const scrubToon = toon => {
 }
 
 export const getTotalContribsByAccount = async account => {
-    const response = await getAllToons({ account: account });
-    if (response.errors.length) {
+    const response = await getAllToons({ account });
+
+    if (response.errors && response.errors.length) {
         console.log("Encountered errors getting all toons for an account");
         console.log(response.errors);
     }
@@ -174,46 +175,60 @@ export const groupBy = (list, keyGetter) => {
 }
 
 export const getAllToons = async (variables) => {
+    
     let toons = [];
     let errors = [];
     let response = await API.graphql(graphqlOperation(queries.listToons, variables));
-    while (response.data.listToons.nextToken) {
-        if (response.data.listToons.items)
-        {
-            toons = [...toons, ...response.data.listToons.items];
-        }
-        if (response.data.listToons.errors) {
-            errors = [...errors, ...response.data.listToons.errors];
-        }
+
+    if (response.data.listToons.nextToken) {
         variables.nextToken = response.data.listToons.nextToken;
-        response = await API.graphql(graphqlOperation(queries.listToons, variables));
+        while (variables.nextToken) {
+            if (response.data.listToons.items)
+            {
+                toons = [...toons, ...response.data.listToons.items];
+            }
+            if (response.data.listToons.errors) {
+                errors = [...errors, ...response.data.listToons.errors];
+            }
+            variables.nextToken = response.data.listToons.nextToken;
+            response = await API.graphql(graphqlOperation(queries.listToons, variables));
+        }
+
+        return {toons: toons, errors: errors};
     }
 
-    return {toons: toons, errors: errors};
+    return {toons: response.data.listToons.items, errors: response.data.listToons.errors};
 }
 
 export const getAllToonsForFleet = async (fleet,  inFleet = false) => {
     let toons = [];
     let errors = [];
-    const variables = { fleet: {eq: fleet} }
+    const variables = { fleet }
     const operation = inFleet ? queries.toonsInFleet : queries.toonsByFleet;
+    const operationString = inFleet ? "toonsInFleet" : "toonsByFleet";
 
     if (inFleet) {
-        variables.inFleet = true;
+        variables.inFleet = { eq: 1 };
     }
 
     let response = await API.graphql(graphqlOperation(operation, variables));
-    while (response.data.toonsByFleet.nextToken) {
-        if (response.data.toonsByFleet.items)
-        {
-            toons = [...toons, ...response.data.toonsByFleet.items];
-        }
-        if (response.data.toonsByFleet.errors) {
-            errors = [...errors, ...response.data.toonsByFleet.errors];
-        }
-        variables.nextToken = response.data.toonsByFleet.nextToken;
-        response = await API.graphql(graphqlOperation(operation, variables));
-    }
 
-    return {toons: toons, errors: errors};
+    if (response.data[operationString].nextToken) {
+        variables.nextToken = response.data[operationString].nextToken;
+        while (variables.nextToken) {
+            if (response.data[operationString].items)
+            {
+                toons = [...toons, ...response.data[operationString].items];
+            }
+            if (response.data[operationString].errors) {
+                errors = [...errors, ...response.data[operationString].errors];
+            }
+            variables.nextToken = response.data[operationString].nextToken;
+            response = await API.graphql(graphqlOperation(operation, variables));
+        }
+        
+        return {toons: toons, errors: errors};
+    }
+    
+    return {toons: response.data[operationString].items, errors: response.data[operationString].errors};
 }
