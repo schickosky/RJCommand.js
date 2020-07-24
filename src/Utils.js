@@ -196,12 +196,13 @@ export const getAllToonsForFleet = async (fleet,  inFleet = false) => {
     let toons = [];
     let errors = [];
     const variables = { fleet: {eq: fleet} }
+    const operation = inFleet ? queries.toonsInFleet : queries.toonsByFleet;
 
     if (inFleet) {
         variables.inFleet = true;
     }
 
-    let response = await API.graphql(graphqlOperation(queries.toonsByFleet, variables));
+    let response = await API.graphql(graphqlOperation(operation, variables));
     while (response.data.toonsByFleet.nextToken) {
         if (response.data.toonsByFleet.items)
         {
@@ -211,7 +212,7 @@ export const getAllToonsForFleet = async (fleet,  inFleet = false) => {
             errors = [...errors, ...response.data.toonsByFleet.errors];
         }
         variables.nextToken = response.data.toonsByFleet.nextToken;
-        response = await API.graphql(graphqlOperation(queries.toonsByFleet, variables));
+        response = await API.graphql(graphqlOperation(operation, variables));
     }
 
     return {toons: toons, errors: errors};
