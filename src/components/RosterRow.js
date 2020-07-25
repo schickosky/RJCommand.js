@@ -35,6 +35,9 @@ class RosterRow extends Component {
                     {moment(this.props.meta.joinDate).format('llll')}
                 </td>
                 <td>
+                    {moment(this.props.meta.originalJoinDate).format('llll')}
+                </td>
+                <td>
                     {moment(this.props.meta.lastActive).format('llll')}
                 </td>
                 <td>

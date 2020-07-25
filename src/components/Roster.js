@@ -18,7 +18,8 @@ class Roster extends Component {
                             <th>Fleet</th>
                             <th>Lifetime Character Contributions in Fleet</th>
                             <th>Lifetime Account Contributions</th>
-                            <th>Join Date</th>
+                            <th>Latest Join Date</th>
+                            <th>Original Join Date</th>
                             <th>Last Active</th>
                             <th>In Fleet</th>
                             <th>Level</th>
