@@ -2,13 +2,17 @@ import moment from 'moment';
 import { API, graphqlOperation } from 'aws-amplify';
 import * as queries from './graphql/queries';
 
-
+/** List of all short fleet names. */
 const fleets = ["ra", "rse", "snoo", "rising", "mirror"];
+
+/** Mapping of rank names to numbers (fleet-agnostic). */
 const rankTransform = new Map(
     [["Cadet", 1], ["Ensign", 2], ["Lieutenant", 3], ["Commander", 4],  ["Captain", 5], ["Admiral", 6], ["Fleet Admiral", 7],
      ["Citizen", 1], ["Uhlan", 2], ["Subcommander", 4], ["Senator", 6], ["Praetor", 7],
      ["Bekk", 1], ["Warrior", 2], ["Sergeant", 3], ["Snoo", 4], ["Snoogin", 5], ["Major Snoo", 6], ["Supreme Snoo", 7]]
 );
+
+/** Mapping of fleets to mappings of rank numbers to names. */
 export const rankNames = new Map(
     [
         ["ra", new Map([[1, "Cadet"], [2, "Ensign"], [3, "Lieutenant"], [4, "Commander"], [5, "Captain"], [6, "Admiral"], [7, "Fleet Admiral"]])],
@@ -18,15 +22,28 @@ export const rankNames = new Map(
         ["mirror", new Map([[1, "Cadet"], [2, "Ensign"], [3, "Lieutenant"], [4, "Commander"], [5, "Captain"], [6, "Admiral"], [7, "Fleet Admiral"]])]
     ]
 );
-console.log(rankNames);
+
+/** Mapping of short fleet names to long fleet names. */
 export const fleetNames = new Map(
     [["ra", "REDdit Alert"], ["rse", "Reddit Star Empire"], ["snoo", "House of Snoo"], ["rising", "House of the Rising Snoo"], ["mirror", "Mirror Reddit"]]
 );
 
+/** List of days required in fleet for promotion to the next rank, by 0-start rank index. */
 const rankDays = [14, 90];
+
+/** List of contribs required for promotion to the next rank, by 0-start rank index. */
 const rankContribs = [20000, 45000];
+
+/** List of inactivity thresholds for kicking, by 0-start rank index. */
 const rankKicksDays = [10, 14, 21, 28];
 
+/**
+ * Creates a toon from a legacy data export row.
+ *
+ * @param {Object} data The legacy data output to create the toon from.
+ * @param {string} fleet The fleet for which the toon row was uplaoded.
+ * @returns The newly created toon.
+ */
 const createToonLegacy = (data, fleet) => {
     let contribs = {};
     let charFleet = "";
@@ -58,6 +75,14 @@ const createToonLegacy = (data, fleet) => {
     };
 }
 
+
+ /**
+ * Creates a toon from a game roster export row.
+ *
+ * @param {Object} data The legacy data output to create the toon from.
+ * @param {string} fleet The fleet for which the toon row was uplaoded.
+ * @returns The newly created toon.
+ */
 export const createToon = (data, fleet) => {
     if ("cname" in data) {
         return createToonLegacy(data, fleet);
@@ -84,6 +109,14 @@ export const createToon = (data, fleet) => {
     };
 };
 
+
+/**
+ * Merge two different representations of the same toon.
+ *
+ * @param {Object} l Left, or older, toon to merge
+ * @param {Object} r Right, or newer, toon to merge.
+ * @returns The result of merging l with r.
+ */
 export const mergeToons = (l, r) => {
     if (l.account === "@LetheOblivion") {
         console.log("L:")
@@ -118,15 +151,29 @@ export const mergeToons = (l, r) => {
     return newToon;
 };
 
+/**
+ * Scrub a toon of storage metadata.
+ * 
+ * @param {Object} toon Toon to scrub.
+ * @returns The scrubbed toon.
+ */
 export const scrubToon = toon => {
     delete toon.createdAt;
     delete toon.updatedAt;
+    
     toon.expectedVersion = toon.version;
+    
     delete toon.version;
 
     return toon;
 }
 
+/**
+ * Get total lifetime contribs for an entire account.
+ * 
+ * @param {string} account Account to get contribs for.
+ * @returns The contribs object for the account.
+ */
 export const getTotalContribsByAccount = async account => {
     const response = await getAllToons({ account });
 
@@ -136,30 +183,60 @@ export const getTotalContribsByAccount = async account => {
     }
 
     const accountContribs = response.toons.map(toon => toon.contribs).reduce((l, r) => fleets.reduce((acc, cur) => ({...acc, [cur]: (l[cur] || 0) + (r[cur] || 0) }), {}), {});
+    
     return fleets.reduce((acc, cur) => acc + accountContribs[cur], 0);
 }
 
+/**
+ * Calculate summed contribs for a single toon.
+ * @param {Object} toon Toon to get contribs for.
+ * @returns The contribs of the given toon.
+ */
 export const getTotalContribs = toon => {
     return Object.values(toon.contribs).reduce((l, r) => l + r);
 }
 
+/**
+ * Calculates which of an account's toons are up for promotion, if any.
+ * 
+ * @param {Array} allToons The list of all toons for a single account.
+ * @returns The list of toons that need promotion.
+ */
 export const needsPromotion = allToons => {
     if (!Array.isArray(allToons) || !allToons.length) {
         return [];
     }
 
+    // toon contribs, reduced via an inner reduce over fleets, to sum the contrib objects
     const accountContribs = allToons.map(toon => toon.contribs).reduce((l, r) => fleets.reduce((acc, cur) => ({...acc, [cur]: (l[cur] || 0) + (r[cur] || 0) }), {}), {});
+
     const totalContribs = fleets.reduce((acc, cur) => acc + accountContribs[cur], 0);
+    
     const totalDays = moment.duration(Math.max(...allToons.filter(toon => toon.inFleet).map(toon => moment().diff(moment(toon.joinDate))))).asDays();
+    
     const maxRank = Math.max(...(allToons.map(toon => toon.maximumRank)));
+    
     return allToons.filter(toon => (totalDays > rankDays[toon.currentRank - 1] && totalContribs > rankContribs[toon.currentRank - 1]) || (toon.currentRank < maxRank))
 };
 
+/**
+ * Checks if a given toon is up for kicking.
+ * 
+ * @param {Object} toon The toon to check.
+ * @returns A value representing if the toon is up for kicking.
+ */
 export const needsKick = toon => {
     const goneDays = moment.duration(moment().diff(toon.lastActive)).asDays();
     return goneDays > rankKicksDays[toon.currentRank - 1];
 }
 
+/**
+ * Groups items in a list by the result of some function.
+ * 
+ * @param {Array} list List of items to group.
+ * @param {function(any): any} keyGetter 
+ * @returns The map of grouped items.
+ */
 export const groupBy = (list, keyGetter) => {
     const map = new Map();
     list.forEach((item) => {
@@ -174,6 +251,12 @@ export const groupBy = (list, keyGetter) => {
     return map;
 }
 
+/**
+ * Gets all (or some) toons from storage.
+ * 
+ * @param {Object} variables Variables to pass to the query.
+ * @returns An object containing the returned toons and any errors.
+ */
 export const getAllToons = async (variables) => {
     
     let toons = [];
@@ -200,6 +283,14 @@ export const getAllToons = async (variables) => {
     return {toons: response.data.listToons.items, errors: response.data.listToons.errors};
 }
 
+/**
+ * Gets all toons for a given fleet.
+ * 
+ * @param {string} fleet The fleet to get toons for.
+ * @param {Boolean} inFleet A value representing if only toons currently marked as in fleet
+ * should be retrieved.
+ * @returns An object containing the returned toons and any errors.
+ */
 export const getAllToonsForFleet = async (fleet,  inFleet = false) => {
     let toons = [];
     let errors = [];
