@@ -5,17 +5,17 @@ import * as queries from './graphql/queries';
 
 const fleets = ["ra", "rse", "snoo", "rising", "mirror"];
 const rankTransform = new Map(
-    [["Cadet", 1], ["Ensign", 2], ["Lieutenant", 3], ["Commander", 4], ["Admiral", 6], ["Fleet Admiral", 7],
+    [["Cadet", 1], ["Ensign", 2], ["Lieutenant", 3], ["Commander", 4],  ["Captain", 5], ["Admiral", 6], ["Fleet Admiral", 7],
      ["Citizen", 1], ["Uhlan", 2], ["Subcommander", 4], ["Senator", 6], ["Praetor", 7],
-     ["Bekk", 1], ["Warrior", 2], ["Sergeant", 3], ["Snoo", 4], ["Major Snoo", 6], ["Supreme Snoo", 7]]
+     ["Bekk", 1], ["Warrior", 2], ["Sergeant", 3], ["Snoo", 4], ["Snoogin", 5], ["Major Snoo", 6], ["Supreme Snoo", 7]]
 );
 export const rankNames = new Map(
     [
-        ["ra", new Map([[1, "Cadet"], [2, "Ensign"], [3, "Lieutenant"], [4, "Commander"], [6, "Admiral"], [7, "Fleet Admiral"]])],
+        ["ra", new Map([[1, "Cadet"], [2, "Ensign"], [3, "Lieutenant"], [4, "Commander"], [5, "Captain"], [6, "Admiral"], [7, "Fleet Admiral"]])],
         ["rse", new Map([[1, "Citizen"], [2, "Uhlan}"], [3, "Lieutenant"], [4, "Subcommander"], [6, "Senator"], [7, "Praetor"]])],
-        ["snoo", new Map([[1, "Bekk"], [2, "Warrior"], [3, "Sergeant"], [4, "Snoo"], [6, "Major Snoo"], [7, "Supreme Snoo"]])],
-        ["rising", new Map([[1, "Bekk"], [2, "Warrior"], [3, "Sergeant"], [4, "Snoo"], [6, "Major Snoo"], [7, "Supreme Snoo"]])],
-        ["mirror", new Map([[1, "Cadet"], [2, "Ensign"], [3, "Lieutenant"], [4, "Commander"], [6, "Admiral"], [7, "Fleet Admiral"]])]
+        ["snoo", new Map([[1, "Bekk"], [2, "Warrior"], [3, "Sergeant"], [4, "Snoo"], [5, "Snoogin"], [6, "Major Snoo"], [7, "Supreme Snoo"]])],
+        ["rising", new Map([[1, "Bekk"], [2, "Warrior"], [3, "Sergeant"], [4, "Snoo"], [5, "Snoogin"], [6, "Major Snoo"], [7, "Supreme Snoo"]])],
+        ["mirror", new Map([[1, "Cadet"], [2, "Ensign"], [3, "Lieutenant"], [4, "Commander"], [5, "Captain"], [6, "Admiral"], [7, "Fleet Admiral"]])]
     ]
 );
 console.log(rankNames);

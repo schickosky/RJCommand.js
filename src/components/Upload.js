@@ -11,7 +11,8 @@ class Upload extends Component {
         super(props);
         this.state = {
             toons: [],
-            loading: false
+            loading: false, 
+            error: ""
         };
         this.handleRosterFile = this.handleRosterFile.bind(this);
         this.handleParsedRoster = this.handleParsedRoster.bind(this);
@@ -33,6 +34,7 @@ class Upload extends Component {
                 </div>
                 </div>
                 }
+                { this.state.error && <div className="alert alert-danger" onCLick={e => this.setState({ error: "" })}>{this.state.error}</div> }
             </div>
         );
     }
@@ -42,10 +44,11 @@ class Upload extends Component {
         this.setState({ loading: true });
         try {
             const response = await getAllToonsForFleet(this.props.fleet, true);
-            if (response.errors.length)
+            if (response.errors && response.errors.length)
             {
                 console.log("Encountered errors getting existing toons");
                 console.log(response.errors);
+                this.setState( { error: this.state.error + response.errors.join("; ") + "; "})
             }
 
             this.setState({
@@ -53,6 +56,7 @@ class Upload extends Component {
             });
         } catch (error) {
             console.log(error);
+            this.setState({ error: this.state.error + error + "; " });
         }
 
         const parseFile = rawFile => {
@@ -91,6 +95,7 @@ class Upload extends Component {
                     await API.graphql(graphqlOperation(mutations.updateToon, { input: scrubToon(toon) }));        
                 } catch (error) {
                     console.log(error);
+                    this.setState({ error: this.state.error + error + "; "})
                 }
             }
             else {
@@ -99,6 +104,7 @@ class Upload extends Component {
                 }
                 catch (error) {
                     console.log(error);
+                    this.setState({ error: this.state.error + error + "; "})
                 }
             }
         }));
@@ -115,6 +121,7 @@ class Upload extends Component {
         }
         catch (error) {
             console.log(error);
+            this.setState({ error: this.state.error + error + "; "})
         }
         return toon;
     }
